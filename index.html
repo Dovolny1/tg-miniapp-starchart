@@ -1,0 +1,471 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Star Chart</title>
+
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    :root{
+      --bg: #0b0c10;
+      --surface: #12141a;
+      --surface-2: #171a21;
+      --text: #e7eaf0;
+      --muted: rgba(231,234,240,.72);
+      --hint: rgba(231,234,240,.55);
+      --border: rgba(231,234,240,.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --primary: #2ea6ff;
+      --primaryText: #ffffff;
+      --danger: #ff4d4d;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(46,166,255,.22), transparent 60%),
+        radial-gradient(1000px 700px at 110% 10%, rgba(157,78,255,.18), transparent 55%),
+        linear-gradient(180deg, #07080b 0%, #0b0c10 50%, #07080b 100%);
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
+    }
+
+    .wrap{
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 14px 0 18px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(18,20,26,.95), rgba(18,20,26,.78));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header{
+      padding: 16px 16px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .title{
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: .2px;
+    }
+    .subtitle{
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(231,234,240,.06);
+      border: 1px solid rgba(231,234,240,.10);
+      padding: 8px 10px;
+      border-radius: 999px;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .toolbar{
+      padding: 12px 16px 14px;
+      display:flex;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,.12);
+    }
+
+    button{
+      font: inherit;
+      color: var(--text);
+      background: rgba(231,234,240,.06);
+      border: 1px solid rgba(231,234,240,.12);
+      border-radius: 14px;
+      padding: 12px 12px;
+      cursor: pointer;
+      transition: transform .08s ease, border-color .15s ease, background .15s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active{ transform: translateY(1px) scale(.995); }
+    button:hover{ border-color: rgba(231,234,240,.22); }
+
+    .btnPrimary{
+      background: linear-gradient(180deg, rgba(46,166,255,.98), rgba(46,166,255,.75));
+      color: var(--primaryText);
+      border: 1px solid rgba(46,166,255,.35);
+    }
+    .btnPrimary:hover{ border-color: rgba(46,166,255,.55); }
+
+    .btnGhost{
+      background: rgba(231,234,240,.03);
+    }
+
+    .btnWide{
+      flex: 1;
+      font-weight: 650;
+      letter-spacing: .2px;
+    }
+
+    .status{
+      padding: 10px 16px 0;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 22px;
+    }
+
+    .list{
+      padding: 12px 12px 6px;
+    }
+
+    .row{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 10px;
+      border: 1px solid rgba(231,234,240,.10);
+      border-radius: 16px;
+      margin: 8px 0;
+      background: rgba(0,0,0,.12);
+    }
+
+    .rank{
+      width: 34px;
+      text-align: left;
+      font-size: 13px;
+      color: var(--hint);
+      user-select:none;
+    }
+
+    .avatar{
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(231,234,240,.08);
+      border: 1px solid rgba(231,234,240,.14);
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .avatar img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .name{
+      flex: 1;
+      min-width: 0;
+      display:flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .name a{
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 650;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .name a:hover{ text-decoration: underline; }
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stars{
+      font-size: 13px;
+      color: var(--muted);
+      user-select:none;
+      white-space: nowrap;
+    }
+
+    .voteBtn{
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(231,234,240,.14);
+      background: rgba(231,234,240,.06);
+      min-width: 44px;
+    }
+
+    .empty{
+      padding: 14px 14px 10px;
+      color: var(--muted);
+      line-height: 1.35;
+      border: 1px dashed rgba(231,234,240,.18);
+      border-radius: 16px;
+      background: rgba(0,0,0,.10);
+      margin: 8px 0 10px;
+    }
+
+    .footerHint{
+      padding: 0 16px 14px;
+      color: var(--hint);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .warn{
+      color: rgba(255,255,255,.9);
+      background: rgba(255,77,77,.10);
+      border: 1px solid rgba(255,77,77,.25);
+      padding: 10px 12px;
+      border-radius: 14px;
+      margin: 10px 12px 2px;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .topBar{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content: space-between;
+      padding: 0 0 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topBar">
+      <div class="chip" id="chipEnv">🌟 Star Chart</div>
+      <div class="chip" id="chipMe">👤 …</div>
+    </div>
+
+    <div class="card">
+      <div class="header">
+        <div>
+          <h1 class="title">Звёздный чарт</h1>
+          <p class="subtitle">
+            Кинь ⭐, чтобы поднять себя (или кого-то ещё) в таблице. Кто накинул больше — выше.
+          </p>
+        </div>
+        <div class="chip" id="chipConn">API: …</div>
+      </div>
+
+      <div id="warn" class="warn" style="display:none;"></div>
+
+      <div class="status" id="status"></div>
+
+      <div class="list" id="list"></div>
+
+      <div class="footerHint">
+        Нажимай на ник, чтобы открыть профиль (работает только если у человека есть <b>@username</b>).
+        Оплата открывается только внутри Telegram.
+      </div>
+
+      <div class="toolbar">
+        <button class="btnPrimary btnWide" id="btnMe">Vote For Yourself ⭐</button>
+        <button class="btnGhost" id="btnReload">Reload</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === CONFIG ===
+    const API_URL = "https://starchart.s-kohanovich.workers.dev"; // твой воркер
+
+    // === Telegram ===
+    const tg = window.Telegram?.WebApp;
+    if (tg) tg.ready();
+
+    // === UI helpers ===
+    const el = (id) => document.getElementById(id);
+
+    function setStatus(text) { el("status").textContent = text || ""; }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+    function showWarn(text) {
+      const w = el("warn");
+      if (!text) { w.style.display = "none"; w.textContent = ""; return; }
+      w.style.display = "block";
+      w.textContent = text;
+    }
+
+    function getMe() {
+      const u = tg?.initDataUnsafe?.user;
+      if (!u?.id) return null;
+      const uname = u.username ? `@${u.username}` : null;
+      const name = [u.first_name, u.last_name].filter(Boolean).join(" ").trim() || null;
+      return { id: u.id, username: uname, name };
+    }
+
+    function setHeaderChips() {
+      // API chip
+      el("chipConn").textContent = "API: ok";
+
+      // user chip
+      const me = getMe();
+      if (!tg) {
+        el("chipMe").textContent = "🌍 Browser";
+        showWarn("Открой это внутри Telegram, иначе оплата Stars не заработает.");
+        return;
+      }
+      if (!me) {
+        el("chipMe").textContent = "👤 неизвестно";
+        showWarn("Не вижу Telegram user.id. Запусти миниапп из бота, не из браузера.");
+        return;
+      }
+      el("chipMe").textContent = `👤 ${me.username || me.name || me.id}`;
+    }
+
+    // === API ===
+    async function apiGet(path) {
+      const r = await fetch(`${API_URL}${path}`);
+      return r.json();
+    }
+
+    async function apiPost(path, body) {
+      const r = await fetch(`${API_URL}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || {})
+      });
+      return r.json();
+    }
+
+    // === Leaderboard rendering ===
+    function renderLeaderboard(items) {
+      const list = el("list");
+      list.innerHTML = "";
+
+      if (!items || !items.length) {
+        list.innerHTML = `
+          <div class="empty">
+            Пока пусто. Это твой шанс стать королём помойки — за <b>1 звезду</b> 😈
+          </div>
+        `;
+        return;
+      }
+
+      for (const it of items) {
+        const display = it.username || it.name || String(it.tg_id);
+        const safeDisplay = escapeHtml(display);
+
+        const canOpenProfile = it.username && String(it.username).startsWith("@");
+        const profileLink = canOpenProfile ? `https://t.me/${String(it.username).slice(1)}` : null;
+
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const avatarHtml = it.photo_url
+          ? `<div class="avatar"><img alt="" src="${escapeHtml(it.photo_url)}"></div>`
+          : `<div class="avatar"></div>`;
+
+        row.innerHTML = `
+          <div class="rank">#${it.rank}</div>
+          ${avatarHtml}
+          <div class="name">
+            ${profileLink
+              ? `<a href="${profileLink}" target="_blank" rel="noopener noreferrer">${safeDisplay}</a>`
+              : `<a href="javascript:void(0)" style="opacity:.85;cursor:default;text-decoration:none;">${safeDisplay}</a>`
+            }
+            <div class="meta">${escapeHtml(String(it.tg_id))}</div>
+          </div>
+          <div class="stars">${Number(it.total_stars) || 0}⭐</div>
+          <button class="voteBtn" title="Vote" aria-label="Vote">⭐</button>
+        `;
+
+        row.querySelector(".voteBtn").onclick = () => voteFor(it.tg_id, it.username, it.name);
+        list.appendChild(row);
+      }
+    }
+
+    async function loadLeaderboard() {
+      try {
+        setStatus("Loading leaderboard…");
+        const data = await apiGet("/leaderboard");
+        renderLeaderboard(data.items || []);
+        setStatus("");
+      } catch (e) {
+        setStatus("");
+        showWarn("Не могу загрузить лидерборд. Проверь, что Worker доступен и отвечает.");
+      }
+    }
+
+    // === Voting ===
+    async function voteFor(toId, toUsername, toName) {
+      if (!tg) {
+        alert("Открой миниапп внутри Telegram — оплата Stars работает только там.");
+        return;
+      }
+
+      setStatus("Creating invoice…");
+
+      let res;
+      try {
+        res = await apiPost("/create-invoice", {
+          to_user_id: Number(toId),
+          to_username: toUsername || null,
+          to_name: toName || null
+        });
+      } catch (e) {
+        setStatus("");
+        alert("Ошибка сети при создании инвойса.");
+        return;
+      }
+
+      setStatus("");
+
+      if (!res?.ok || !res?.invoice_link) {
+        alert("Не удалось создать инвойс: " + (res?.error || "unknown"));
+        return;
+      }
+
+      tg.openInvoice(res.invoice_link, (status) => {
+        // status обычно: "paid" | "cancelled" | "failed"
+        // Истина — webhook, но UI обновим чуть позже
+        setTimeout(loadLeaderboard, 1500);
+      });
+    }
+
+    async function voteForYourself() {
+      const me = getMe();
+      if (!me) {
+        alert("Не вижу твоего Telegram user.id. Запусти миниапп из бота.");
+        return;
+      }
+      return voteFor(me.id, me.username, me.name);
+    }
+
+    // === init ===
+    document.addEventListener("DOMContentLoaded", () => {
+      setHeaderChips();
+
+      el("btnMe").onclick = voteForYourself;
+      el("btnReload").onclick = loadLeaderboard;
+
+      loadLeaderboard();
+    });
+  </script>
+</body>
+</html>
