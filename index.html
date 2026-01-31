@@ -5,29 +5,23 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Star Chart</title>
 
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     :root{
-      --bg: #0b0c10;
-      --surface: rgba(18,20,26,.92);
-      --surface2: rgba(0,0,0,.14);
       --text: #e7eaf0;
       --muted: rgba(231,234,240,.72);
       --hint: rgba(231,234,240,.55);
       --border: rgba(231,234,240,.12);
       --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --primary: #2ea6ff;
       --primaryText: #ffffff;
       --radius: 18px;
     }
-
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body{
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color: var(--text);
       background:
         radial-gradient(1200px 800px at 15% -10%, rgba(46,166,255,.22), transparent 60%),
@@ -35,13 +29,7 @@
         linear-gradient(180deg, #07080b 0%, #0b0c10 50%, #07080b 100%);
       padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
     }
-
-    .wrap{
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 14px 0 18px;
-    }
-
+    .wrap{ max-width: 520px; margin: 0 auto; padding: 14px 0 18px; }
     .card{
       background: linear-gradient(180deg, rgba(18,20,26,.95), rgba(18,20,26,.78));
       border: 1px solid var(--border);
@@ -49,79 +37,39 @@
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-
-    .header{
-      padding: 16px 16px 12px;
-    }
-
-    .title{
-      margin: 0;
-      font-size: 18px;
-      font-weight: 750;
-      letter-spacing: .2px;
-    }
-
-    .subtitle{
-      margin: 6px 0 0;
+    .header{ padding: 16px 16px 12px; }
+    .title{ margin:0; font-size:18px; font-weight:750; letter-spacing:.2px; }
+    .subtitle{ margin:6px 0 0; font-size:13px; color: var(--muted); line-height:1.35; }
+    .warn{
+      color: rgba(231,234,240,.92);
+      background: rgba(255,77,77,.10);
+      border: 1px solid rgba(255,77,77,.25);
+      padding: 10px 12px;
+      border-radius: 14px;
+      margin: 10px 12px 0;
       font-size: 13px;
-      color: var(--muted);
       line-height: 1.35;
+      display:none;
     }
-
-    .status{
-      padding: 10px 16px 0;
-      font-size: 13px;
-      color: var(--muted);
-      min-height: 22px;
-    }
-
-    .list{
-      padding: 12px 12px 6px;
-    }
-
+    .status{ padding: 10px 16px 0; font-size: 13px; color: var(--muted); min-height: 22px; }
+    .list{ padding: 12px 12px 6px; }
     .row{
-      display:flex;
-      align-items:center;
-      gap: 10px;
+      display:flex; align-items:center; gap: 10px;
       padding: 10px 10px;
       border: 1px solid rgba(231,234,240,.10);
       border-radius: 16px;
       margin: 8px 0;
-      background: var(--surface2);
+      background: rgba(0,0,0,.14);
     }
-
-    .rank{
-      width: 34px;
-      text-align: left;
-      font-size: 13px;
-      color: var(--hint);
-      user-select:none;
-      flex: 0 0 auto;
-    }
-
+    .rank{ width: 34px; font-size: 13px; color: var(--hint); user-select:none; flex:0 0 auto; }
     .avatar{
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
+      width: 34px; height: 34px; border-radius: 50%;
       background: rgba(231,234,240,.08);
       border: 1px solid rgba(231,234,240,.14);
-      overflow:hidden;
-      flex: 0 0 auto;
+      overflow:hidden; flex:0 0 auto;
     }
-    .avatar img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display:block;
-    }
-
-    .name{
-      flex: 1;
-      min-width: 0;
-      display:flex;
-      flex-direction: column;
-      gap: 2px;
-    }
+    .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .name{ flex:1; min-width:0; }
     .name a, .name span{
       color: var(--text);
       font-weight: 650;
@@ -132,14 +80,7 @@
       text-decoration: none;
     }
     .name a:hover{ text-decoration: underline; }
-
-    .stars{
-      font-size: 13px;
-      color: var(--muted);
-      user-select:none;
-      white-space: nowrap;
-      flex: 0 0 auto;
-    }
+    .stars{ font-size: 13px; color: var(--muted); user-select:none; white-space: nowrap; flex:0 0 auto; }
 
     button{
       font: inherit;
@@ -155,11 +96,7 @@
     }
     button:active{ transform: translateY(1px) scale(.995); }
     button:hover{ border-color: rgba(231,234,240,.22); }
-
-    .voteBtn{
-      min-width: 44px;
-      flex: 0 0 auto;
-    }
+    .voteBtn{ min-width: 44px; flex:0 0 auto; }
 
     .empty{
       padding: 14px 14px 10px;
@@ -170,7 +107,6 @@
       background: rgba(0,0,0,.10);
       margin: 8px 0 10px;
     }
-
     .toolbar{
       padding: 12px 16px 14px;
       display:flex;
@@ -178,7 +114,6 @@
       border-top: 1px solid var(--border);
       background: rgba(0,0,0,.12);
     }
-
     .btnPrimary{
       flex: 1;
       font-weight: 700;
@@ -188,19 +123,6 @@
       color: var(--primaryText);
       border: 1px solid rgba(46,166,255,.35);
     }
-    .btnPrimary:hover{ border-color: rgba(46,166,255,.55); }
-
-    .warn{
-      color: rgba(231,234,240,.92);
-      background: rgba(255,77,77,.10);
-      border: 1px solid rgba(255,77,77,.25);
-      padding: 10px 12px;
-      border-radius: 14px;
-      margin: 10px 12px 0;
-      font-size: 13px;
-      line-height: 1.35;
-      display:none;
-    }
   </style>
 </head>
 
@@ -209,9 +131,7 @@
     <div class="card">
       <div class="header">
         <h1 class="title">Star Chart</h1>
-        <p class="subtitle">
-          Drop a ⭐ to climb the chart. More stars = higher rank.
-        </p>
+        <p class="subtitle">Drop a ⭐ to climb the chart. More stars = higher rank.</p>
       </div>
 
       <div id="warn" class="warn"></div>
@@ -225,29 +145,26 @@
   </div>
 
   <script>
-    // === CONFIG ===
-    const API_URL = "https://starchart.s-kohanovich.workers.dev"; // your worker
+    const API_URL = "https://starchart.s-kohanovich.workers.dev";
 
-    // === Telegram ===
     const tg = window.Telegram?.WebApp;
     if (tg) tg.ready();
 
-    // === UI ===
     const el = (id) => document.getElementById(id);
-
-    function setStatus(text) { el("status").textContent = text || ""; }
-
-    function showWarn(text) {
+    function setStatus(t){ el("status").textContent = t || ""; }
+    function showWarn(t){
       const w = el("warn");
-      if (!text) { w.style.display = "none"; w.textContent = ""; return; }
-      w.style.display = "block";
-      w.textContent = text;
+      if (!t) { w.style.display = "none"; w.textContent=""; return; }
+      w.style.display = "block"; w.textContent = t;
     }
-
-    function escapeHtml(s) {
+    function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, c => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
       }[c]));
+    }
+
+    function getInitData() {
+      return tg?.initData || "";
     }
 
     function getMe() {
@@ -258,32 +175,30 @@
       return { id: u.id, username: uname, name };
     }
 
-    // === API ===
     async function apiGet(path) {
       const r = await fetch(`${API_URL}${path}`);
       return r.json();
     }
 
     async function apiPost(path, body) {
+      const initData = getInitData();
       const r = await fetch(`${API_URL}${path}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Init-Data": initData
+        },
         body: JSON.stringify(body || {})
       });
       return r.json();
     }
 
-    // === Leaderboard ===
     function renderLeaderboard(items) {
       const list = el("list");
       list.innerHTML = "";
 
       if (!items || !items.length) {
-        list.innerHTML = `
-          <div class="empty">
-            It’s empty. Be the first one to throw a ⭐ and claim the top spot.
-          </div>
-        `;
+        list.innerHTML = `<div class="empty">It’s empty. Be the first one to throw a ⭐ and claim the top spot.</div>`;
         return;
       }
 
@@ -294,7 +209,6 @@
         const canOpenProfile = it.username && String(it.username).startsWith("@");
         const profileLink = canOpenProfile ? `https://t.me/${String(it.username).slice(1)}` : null;
 
-        // Avatar via worker proxy (Telegram file)
         const avatarSrc = `${API_URL}/avatar?tg_id=${encodeURIComponent(it.tg_id)}`;
 
         const row = document.createElement("div");
@@ -316,7 +230,7 @@
           <button class="voteBtn" title="Vote" aria-label="Vote">⭐</button>
         `;
 
-        row.querySelector(".voteBtn").onclick = () => voteFor(it.tg_id, it.username, it.name);
+        row.querySelector(".voteBtn").onclick = () => voteFor(it.tg_id);
         list.appendChild(row);
       }
     }
@@ -327,44 +241,35 @@
         const data = await apiGet("/leaderboard");
         renderLeaderboard(data.items || []);
         setStatus("");
-      } catch (e) {
+      } catch {
         setStatus("");
         showWarn("Couldn’t load the leaderboard. Try again later.");
       }
     }
 
-    // === Voting ===
-    async function voteFor(toId, toUsername, toName) {
+    async function voteFor(toId) {
       if (!tg) {
         showWarn("Open this inside Telegram to use Stars payments.");
         return;
       }
 
       setStatus("Creating invoice…");
-
       let res;
       try {
-        res = await apiPost("/create-invoice", {
-          to_user_id: Number(toId),
-          to_username: toUsername || null,
-          to_name: toName || null
-        });
-      } catch (e) {
+        res = await apiPost("/create-invoice", { to_user_id: Number(toId) });
+      } catch {
         setStatus("");
         showWarn("Network error while creating invoice.");
         return;
       }
-
       setStatus("");
 
       if (!res?.ok || !res?.invoice_link) {
-        showWarn("Couldn’t create invoice.");
+        showWarn(res?.reason ? `Not authorized (${res.reason}).` : "Couldn’t create invoice.");
         return;
       }
 
-      tg.openInvoice(res.invoice_link, (status) => {
-        // status usually: "paid" | "cancelled" | "failed"
-        // Truth is webhook, but we refresh UI shortly after
+      tg.openInvoice(res.invoice_link, () => {
         setTimeout(loadLeaderboard, 1500);
       });
     }
@@ -375,14 +280,11 @@
         showWarn("Open this Mini App from the bot inside Telegram.");
         return;
       }
-      return voteFor(me.id, me.username, me.name);
+      return voteFor(me.id);
     }
 
-    // === init ===
     document.addEventListener("DOMContentLoaded", () => {
-      // gentle warning only if opened outside Telegram
       if (!tg) showWarn("Open this inside Telegram to use Stars payments.");
-
       el("btnMe").onclick = voteForYourself;
       loadLeaderboard();
     });
