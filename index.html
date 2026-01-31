@@ -96,6 +96,7 @@
     }
     button:active{ transform: translateY(1px) scale(.995); }
     button:hover{ border-color: rgba(231,234,240,.22); }
+
     .voteBtn{ min-width: 44px; flex:0 0 auto; }
 
     .empty{
@@ -107,13 +108,16 @@
       background: rgba(0,0,0,.10);
       margin: 8px 0 10px;
     }
+
     .toolbar{
       padding: 12px 16px 14px;
       display:flex;
+      align-items:center;
       gap: 10px;
       border-top: 1px solid var(--border);
       background: rgba(0,0,0,.12);
     }
+
     .btnPrimary{
       flex: 1;
       font-weight: 700;
@@ -122,6 +126,38 @@
       background: linear-gradient(180deg, rgba(46,166,255,.98), rgba(46,166,255,.75));
       color: var(--primaryText);
       border: 1px solid rgba(46,166,255,.35);
+    }
+
+    .amount{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(231,234,240,.12);
+      border-radius: 14px;
+      background: rgba(231,234,240,.03);
+    }
+    .amountBtn{
+      width: 38px;
+      height: 38px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 0;
+      border-radius: 12px;
+    }
+    .amountValue{
+      min-width: 44px;
+      text-align:center;
+      font-weight: 750;
+      color: rgba(231,234,240,.92);
+      user-select:none;
+    }
+    .amountHint{
+      font-size: 12px;
+      color: var(--hint);
+      margin-top: 6px;
+      padding: 0 16px 12px;
     }
   </style>
 </head>
@@ -138,7 +174,17 @@
       <div id="status" class="status"></div>
       <div id="list" class="list"></div>
 
+      <div class="amountHint">
+        Amount applies to every vote button.
+      </div>
+
       <div class="toolbar">
+        <div class="amount" aria-label="Amount">
+          <button id="btnMinus" class="amountBtn" aria-label="Decrease">−</button>
+          <div id="amountValue" class="amountValue">1⭐</div>
+          <button id="btnPlus" class="amountBtn" aria-label="Increase">+</button>
+        </div>
+
         <button id="btnMe" class="btnPrimary">Vote For Yourself ⭐</button>
       </div>
     </div>
@@ -163,16 +209,12 @@
       }[c]));
     }
 
-    function getInitData() {
-      return tg?.initData || "";
-    }
+    function getInitData() { return tg?.initData || ""; }
 
     function getMe() {
       const u = tg?.initDataUnsafe?.user;
       if (!u?.id) return null;
-      const uname = u.username ? `@${u.username}` : null;
-      const name = [u.first_name, u.last_name].filter(Boolean).join(" ").trim() || null;
-      return { id: u.id, username: uname, name };
+      return { id: u.id };
     }
 
     async function apiGet(path) {
@@ -191,6 +233,19 @@
         body: JSON.stringify(body || {})
       });
       return r.json();
+    }
+
+    // Amount state
+    const AMOUNT_MIN = 1;
+    const AMOUNT_MAX = 250;
+    let amount = 1;
+
+    function renderAmount() {
+      el("amountValue").textContent = `${amount}⭐`;
+      el("btnMinus").disabled = amount <= AMOUNT_MIN;
+      el("btnPlus").disabled = amount >= AMOUNT_MAX;
+      el("btnMinus").style.opacity = el("btnMinus").disabled ? .45 : 1;
+      el("btnPlus").style.opacity = el("btnPlus").disabled ? .45 : 1;
     }
 
     function renderLeaderboard(items) {
@@ -256,7 +311,7 @@
       setStatus("Creating invoice…");
       let res;
       try {
-        res = await apiPost("/create-invoice", { to_user_id: Number(toId) });
+        res = await apiPost("/create-invoice", { to_user_id: Number(toId), amount });
       } catch {
         setStatus("");
         showWarn("Network error while creating invoice.");
@@ -285,6 +340,11 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       if (!tg) showWarn("Open this inside Telegram to use Stars payments.");
+
+      el("btnMinus").onclick = () => { amount = Math.max(AMOUNT_MIN, amount - 1); renderAmount(); };
+      el("btnPlus").onclick  = () => { amount = Math.min(AMOUNT_MAX, amount + 1); renderAmount(); };
+      renderAmount();
+
       el("btnMe").onclick = voteForYourself;
       loadLeaderboard();
     });
