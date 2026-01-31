@@ -16,7 +16,6 @@
       --shadow: 0 10px 30px rgba(0,0,0,.35);
       --primaryText: #ffffff;
       --radius: 18px;
-      --barH: 86px; /* used for list padding so last row isn't hidden */
     }
 
     * { box-sizing: border-box; }
@@ -31,13 +30,13 @@
         radial-gradient(1000px 700px at 110% 10%, rgba(157,78,255,.18), transparent 55%),
         linear-gradient(180deg, #07080b 0%, #0b0c10 50%, #07080b 100%);
       padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
-      overflow: hidden; /* important: internal list handles scroll */
+      overflow: hidden; /* key: no body scroll; internal scroll only */
     }
 
     .wrap{
       max-width: 520px;
       margin: 0 auto;
-      height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      height: 100%;
       display: flex;
       padding: 14px 0 18px;
     }
@@ -46,13 +45,12 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+      min-height: 0; /* allow inner scroll */
       background: linear-gradient(180deg, rgba(18,20,26,.95), rgba(18,20,26,.78));
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
-      min-height: 0; /* allow children to scroll */
-      position: relative;
     }
 
     .header{ padding: 16px 16px 12px; }
@@ -69,13 +67,15 @@
       font-size: 13px;
       line-height: 1.35;
       display:none;
+      flex: 0 0 auto;
     }
 
     .status{
-      padding: 10px 16px 0;
+      padding: 10px 16px 8px;
       font-size: 13px;
       color: var(--muted);
       min-height: 22px;
+      flex: 0 0 auto;
     }
 
     /* Scroll area */
@@ -83,7 +83,7 @@
       flex: 1;
       min-height: 0;
       overflow: auto;
-      padding: 12px 12px calc(var(--barH) + 12px); /* room for sticky bar */
+      padding: 12px 12px 12px;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -145,17 +145,18 @@
       margin: 8px 0 10px;
     }
 
-    /* Sticky bottom bar */
+    /* Bottom bar (NOT absolute) */
     .bar{
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      flex: 0 0 auto;
       border-top: 1px solid var(--border);
-      background:
-        linear-gradient(180deg, rgba(18,20,26,.65), rgba(18,20,26,.95));
-      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.18));
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    }
+
+    .barHint{
+      font-size: 12px;
+      color: var(--hint);
+      padding: 0 16px 8px;
     }
 
     .barRow{
@@ -201,14 +202,6 @@
       color: rgba(231,234,240,.92);
       user-select:none;
     }
-
-    /* Small helper line above bar */
-    .barHint{
-      font-size: 12px;
-      color: var(--hint);
-      padding: 0 16px 10px;
-      margin-top: -2px;
-    }
   </style>
 </head>
 
@@ -225,9 +218,8 @@
 
       <div id="scroll" class="scroll"></div>
 
-      <div class="barHint">Amount applies to every vote button.</div>
-
       <div class="bar">
+        <div class="barHint">Amount applies to every vote button.</div>
         <div class="barRow">
           <div class="amount" aria-label="Amount">
             <button id="btnMinus" class="amountBtn" aria-label="Decrease">−</button>
@@ -245,7 +237,11 @@
     const API_URL = "https://starchart.s-kohanovich.workers.dev";
 
     const tg = window.Telegram?.WebApp;
-    if (tg) tg.ready();
+    if (tg) {
+      tg.ready();
+      // Make sure the Mini App uses full height when possible (helps on mobile)
+      try { tg.expand(); } catch {}
+    }
 
     const el = (id) => document.getElementById(id);
     function setStatus(t){ el("status").textContent = t || ""; }
